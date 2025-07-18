@@ -26,6 +26,9 @@
     <ClCompile Include="ScreenPrintf.cpp">
       <Filter>KamataEngine</Filter>
     </ClCompile>
+    <ClCompile Include="Matrix4x4.cpp">
+      <Filter>KamataEngine</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="C:\KamataEngine\DirectXGame\audio\Audio.h">
@@ -113,5 +116,6 @@
       <Filter>KamataEngine</Filter>
     </ClInclude>
     <ClInclude Include="ScreenPrintf.h" />
+    <ClInclude Include="Matrix4x4.h" />
   </ItemGroup>
 </Project>

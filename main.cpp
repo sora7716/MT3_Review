@@ -3,8 +3,6 @@
 
 const char kWindowTitle[] = "GSManager";
 
-const int kRowHeight = 20;
-
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 
@@ -15,16 +13,28 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 	char keys[256] = { 0 };
 	char preKeys[256] = { 0 };
 
-	Vector3 v1 = { 1.0f,3.0f,-5.0f };
-	Vector3 v2 = { 4.0f,-1.0f,2.0f };
-	float k = 4.0f;
+	Matrix4x4 m1 = {
+		3.2f,0.7f,9.6f,4.4f,
+		5.5f,1.3f,7.8f,2.1f,
+		6.9f,8.0f,2.6f,1.0f,
+		0.5f,7.2f,5.1f,3.3f
+	};
 
-	Vector3 add = {};
-	Vector3 sub = {};
-	Vector3 multiply = {};
-	float dot = 0.0f;
-	float length = 0.0f;
-	Vector3 normalize = {};
+	Matrix4x4 m2 = {
+		4.1f,6.5f,3.3f,2.2f,
+		8.8f,0.6f,9.9f,7.7f,
+		1.1f,5.5f,6.6f,0.0f,
+		3.3f,9.9f,8.8f,2.2f
+	};
+
+	Matrix4x4 add = {};
+	Matrix4x4 multiply = {};
+	Matrix4x4 sub = {};
+	Matrix4x4 inverse1 = {};
+	Matrix4x4 inverse2 = {};
+	Matrix4x4  transpose1 = {};
+	Matrix4x4  transpose2 = {};
+	Matrix4x4  identity = {};
 
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
@@ -38,12 +48,14 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 		///
 		/// ↓更新処理ここから
 		///
-		add = v1 + v2;
-		sub = v1 - v2;
-		multiply = v1 * k;
-		dot = v1.Dot(v2);
-		length = v1.Length();
-		normalize = v2.Normalize();
+		add = m1 + m2;
+		multiply = m1 * m2;
+		sub = m1 - m2;
+		inverse1 = ~m1;
+		inverse2 = ~m2;
+		transpose1 = m1.Transpose();
+		transpose2 = m2.Transpose();
+		identity = Matrix4x4::Indentity4x4();
 		///
 		/// ↑更新処理ここまで
 		///
@@ -51,12 +63,14 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 		///
 		/// ↓描画処理ここから
 		///
-		ScreenPrintf::GetInstance()->VectorScreenPrintf(0, 0, add, " : Add");
-		ScreenPrintf::GetInstance()->VectorScreenPrintf(0, kRowHeight, sub, " : Subtract");
-		ScreenPrintf::GetInstance()->VectorScreenPrintf(0, kRowHeight*2, multiply, " : Multiply");
-		Novice::ScreenPrintf(0, kRowHeight * 3, "%.02f : Dot", dot);
-		Novice::ScreenPrintf(0, kRowHeight * 4, "%.02f : Length", length);
-		ScreenPrintf::GetInstance()->VectorScreenPrintf(0, kRowHeight * 5, normalize, " : Normalize");
+		ScreenPrintf::GetInstance()->MatrixScreenPrintf(0, 0, add, "Add");
+		ScreenPrintf::GetInstance()->MatrixScreenPrintf(0, ScreenPrintf::kRowHeight * 5, sub, "Subtract");
+		ScreenPrintf::GetInstance()->MatrixScreenPrintf(0, ScreenPrintf::kRowHeight * 5 * 2, multiply, "Multiply");
+		ScreenPrintf::GetInstance()->MatrixScreenPrintf(0, ScreenPrintf::kRowHeight * 5 * 3, inverse1, "inverse4");
+		ScreenPrintf::GetInstance()->MatrixScreenPrintf(0, ScreenPrintf::kRowHeight * 5 * 4, inverse2, "inverse2");
+		ScreenPrintf::GetInstance()->MatrixScreenPrintf(ScreenPrintf::kColumnWidth * 5, 0, transpose1, "transpose1");
+		ScreenPrintf::GetInstance()->MatrixScreenPrintf(ScreenPrintf::kColumnWidth * 5, ScreenPrintf::kRowHeight * 5, transpose2, "transpose2");
+		ScreenPrintf::GetInstance()->MatrixScreenPrintf(ScreenPrintf::kColumnWidth * 5, ScreenPrintf::kRowHeight * 5 * 2, identity, "identity");
 		///
 		/// ↑描画処理ここまで
 		///
