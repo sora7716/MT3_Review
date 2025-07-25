@@ -14,6 +14,13 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 	char keys[256] = { 0 };
 	char preKeys[256] = { 0 };
 
+	TransformData transformData = {
+		.scale{1.2f,0.79f,-2.1f},
+		.rotate{0.4f,1.43f,-0.8f},
+		.translate{2.7f,-4.15f,1.57f}
+	};
+	Matrix4x4 worldMatrix = Rendering::GetInstance()->MakeAffineMatrix(transformData);
+
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
 		// フレームの開始
@@ -34,7 +41,7 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 		///
 		/// ↓描画処理ここから
 		///
-
+		ScreenPrintf::GetInstance()->MatrixScreenPrintf(0, 0, worldMatrix, "worldMatrix");
 		///
 		/// ↑描画処理ここまで
 		///

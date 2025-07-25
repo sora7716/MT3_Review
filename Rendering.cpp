@@ -69,6 +69,11 @@ Matrix4x4 Rendering::MakeTranslateMatrix(const Vector3& translate) {
 	return result;
 }
 
+//アフィン行列の作成
+Matrix4x4 Rendering::MakeAffineMatrix(const TransformData& transformData) {
+	return MakeScaleMatrix(transformData.scale) * MakeRotateMatrix(transformData.rotate) * MakeTranslateMatrix(transformData.translate);
+}
+
 //座標変換
 Vector3 Rendering::Transform(const Vector3& vector, const Matrix4x4& matrix) {
 	Vector3 result{};

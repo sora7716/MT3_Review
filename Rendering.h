@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include "Vector3.h"
+#include "RenderingData.h"
 #include "Matrix4x4.h"
 
 /// <summary>
@@ -54,6 +54,13 @@ public://メンバ関数
 	/// <param name="translate">平行移動</param>
 	/// <returns>平行移動行列</returns>
 	Matrix4x4 MakeTranslateMatrix(const Vector3& translate);
+
+	/// <summary>
+	/// アフィン行列の作成
+	/// </summary>
+	/// <param name="transformData">トランスフォームデータ</param>
+	/// <returns>アフィン行列</returns>
+	Matrix4x4 MakeAffineMatrix(const TransformData& transformData);
 
 	/// <summary>
 	/// 座標変換

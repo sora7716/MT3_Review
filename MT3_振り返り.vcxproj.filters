@@ -121,5 +121,6 @@
     <ClInclude Include="ScreenPrintf.h" />
     <ClInclude Include="Matrix4x4.h" />
     <ClInclude Include="Rendering.h" />
+    <ClInclude Include="RenderingData.h" />
   </ItemGroup>
 </Project>
