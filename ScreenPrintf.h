@@ -38,6 +38,16 @@ private://静的メンバ変数
 	static inline ScreenPrintf* instance = nullptr;
 	//解放したかどうか
 	static inline bool isFinalize = false;
+private://メンバ関数
+	/// <summary>
+	/// コンストラクタ
+	/// </summary>
+	ScreenPrintf() = default;
+
+	/// <summary>
+	/// デストラクタ
+	/// </summary>
+	~ScreenPrintf() = default;
 public://定数
 	//列の幅
 	static inline const int kColumnWidth = 60;
