@@ -1,5 +1,7 @@
 ﻿#include "Rendering.h"
+#include <cmath>
 #include <cassert>
+
 //インスタンスのゲッター
 Rendering* Rendering::GetInstance() {
 	assert(!isFinalize && "GetInstance() called after Finalize()");
@@ -9,7 +11,7 @@ Rendering* Rendering::GetInstance() {
 	return instance;
 }
 
-//拡縮の行列の作成
+//拡縮行列の作成
 Matrix4x4 Rendering::MakeScaleMatrix(const Vector3& scale) {
 	//単位行列で初期化
 	Matrix4x4 result = Matrix4x4::Indentity4x4();
@@ -19,8 +21,46 @@ Matrix4x4 Rendering::MakeScaleMatrix(const Vector3& scale) {
 	return result;
 }
 
-//平行移動の行列の作成
-Matrix4x4 Rendering::MakeTranslateMatrix(const Vector3& translate){
+//X軸の回転行列の作成
+Matrix4x4 Rendering::MakeRotateXMatrix(float theta) {
+	//単位行列で初期化
+	Matrix4x4 result = Matrix4x4::Indentity4x4();
+	result.m[1][1] = std::cos(theta);
+	result.m[1][2] = std::sin(theta);
+	result.m[2][1] = -std::sin(theta);
+	result.m[2][2] = std::cos(theta);
+	return result;
+}
+
+//Y軸の回転行列の作成
+Matrix4x4 Rendering::MakeRotateYMatrix(float theta) {
+	//単位行列で初期化
+	Matrix4x4 result = Matrix4x4::Indentity4x4();
+	result.m[0][0] = std::cos(theta);
+	result.m[0][2] = -std::sin(theta);
+	result.m[2][0] = std::sin(theta);
+	result.m[2][2] = std::cos(theta);
+	return result;
+}
+
+//Z軸の回転行列の作成
+Matrix4x4 Rendering::MakeRotateZMatrix(float theta) {
+	//単位行列で初期化
+	Matrix4x4 result = Matrix4x4::Indentity4x4();
+	result.m[0][0] = std::cos(theta);
+	result.m[0][1] = std::sin(theta);
+	result.m[1][0] = -std::sin(theta);
+	result.m[1][1] = std::cos(theta);
+	return result;
+}
+
+//回転行列の作成
+Matrix4x4 Rendering::MakeRotateMatrix(const Vector3& rotate) {
+	return MakeRotateXMatrix(rotate.x) * MakeRotateYMatrix(rotate.y) * MakeRotateZMatrix(rotate.z);
+}
+
+//平行移動行列の作成
+Matrix4x4 Rendering::MakeTranslateMatrix(const Vector3& translate) {
 	//単位行列で初期化
 	Matrix4x4 result = Matrix4x4::Indentity4x4();
 	result.m[3][0] = translate.x;

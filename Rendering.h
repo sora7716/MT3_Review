@@ -5,7 +5,7 @@
 /// <summary>
 /// レンダリング
 /// </summary>
-class Rendering{
+class Rendering {
 public://メンバ関数
 	/// <summary>
 	/// インスタンスのゲッター
@@ -14,17 +14,45 @@ public://メンバ関数
 	static Rendering* GetInstance();
 
 	/// <summary>
-	/// 拡縮の行列の作成
+	/// 拡縮行列の作成
 	/// </summary>
 	/// <param name="scale">拡縮</param>
-	/// <returns>拡縮の行列</returns>
+	/// <returns>拡縮行列</returns>
 	Matrix4x4 MakeScaleMatrix(const Vector3& scale);
 
 	/// <summary>
-	/// 平行移動の行列の作成
+    /// X軸の回転行列の作成
+    /// </summary>
+    /// <param name="theta">θ</param>
+    /// <returns>x軸の回転行列</returns>
+	Matrix4x4 MakeRotateXMatrix(float theta);
+
+	/// <summary>
+	/// Y軸の回転行列の作成
+	/// </summary>
+	/// <param name="theta">θ</param>
+	/// <returns>Y軸の回転行列</returns>
+	Matrix4x4 MakeRotateYMatrix(float theta);
+
+	/// <summary>
+	/// Z軸の回転行列の作成
+	/// </summary>
+	/// <param name="theta">θ</param>
+	/// <returns>Z軸の回転行列</returns>
+	Matrix4x4 MakeRotateZMatrix(float theta);
+
+	/// <summary>
+	/// 回転行列の作成
+	/// </summary>
+	/// <param name="rotate">回転</param>
+	/// <returns>回転行列</returns>
+	Matrix4x4 MakeRotateMatrix(const Vector3& rotate);
+
+	/// <summary>
+	/// 平行移動行列の作成
 	/// </summary>
 	/// <param name="translate">平行移動</param>
-	/// <returns>平行移動の行列</returns>
+	/// <returns>平行移動行列</returns>
 	Matrix4x4 MakeTranslateMatrix(const Vector3& translate);
 
 	/// <summary>

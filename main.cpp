@@ -14,6 +14,12 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 	char keys[256] = { 0 };
 	char preKeys[256] = { 0 };
 
+	Vector3 rotate = { 0.4f,1.43f,-0.8f };
+	Matrix4x4 rotateXMatrix = Rendering::GetInstance()->MakeRotateXMatrix(rotate.x);
+	Matrix4x4 rotateYMatrix = Rendering::GetInstance()->MakeRotateYMatrix(rotate.y);
+	Matrix4x4 rotateZMatrix = Rendering::GetInstance()->MakeRotateZMatrix(rotate.z);
+	Matrix4x4 rotateXYZMatrix = Rendering::GetInstance()->MakeRotateMatrix(rotate);
+
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
 		// フレームの開始
@@ -34,7 +40,10 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 		///
 		/// ↓描画処理ここから
 		///
-
+		ScreenPrintf::GetInstance()->MatrixScreenPrintf(0, 0, rotateXMatrix, "rotateXMatrix");
+		ScreenPrintf::GetInstance()->MatrixScreenPrintf(0, ScreenPrintf::kRowHeight * 5, rotateYMatrix, "rotateYMatrix");
+		ScreenPrintf::GetInstance()->MatrixScreenPrintf(0, ScreenPrintf::kRowHeight * 5 * 2, rotateZMatrix, "rotateZMatrix");
+		ScreenPrintf::GetInstance()->MatrixScreenPrintf(0, ScreenPrintf::kRowHeight * 5 * 3, rotateXYZMatrix, "rotateXYZMatrix");
 		///
 		/// ↑描画処理ここまで
 		///
