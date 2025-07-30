@@ -14,12 +14,9 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 	char keys[256] = { 0 };
 	char preKeys[256] = { 0 };
 
-	TransformData transformData = {
-		.scale{1.2f,0.79f,-2.1f},
-		.rotate{0.4f,1.43f,-0.8f},
-		.translate{2.7f,-4.15f,1.57f}
-	};
-	Matrix4x4 worldMatrix = Rendering::GetInstance()->MakeAffineMatrix(transformData);
+	Matrix4x4 orthographicMatrix = Rendering::GetInstance()->MakeOrthographicMatrix(-160.0f, 160.0f, 200.0f, 300.0f, 0.0f, 1000.0f);
+	Matrix4x4 perspectiveFovMatrix = Rendering::GetInstance()->MakePerspectiveFovMatrix(0.63f, 1.33f, 0.1f, 1000.0f);
+	Matrix4x4 viewportMatrix = Rendering::GetInstance()->MakeViewportMatrix(100.0f, 200.0f, 600.0f, 300.0f, 0.0f, 1.0f);
 
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
@@ -41,7 +38,9 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 		///
 		/// ↓描画処理ここから
 		///
-		ScreenPrintf::GetInstance()->MatrixScreenPrintf(0, 0, worldMatrix, "worldMatrix");
+		ScreenPrintf::GetInstance()->MatrixScreenPrintf(0, 0, orthographicMatrix, "orthographicMatrix");
+		ScreenPrintf::GetInstance()->MatrixScreenPrintf(0, ScreenPrintf::kRowHeight * 5, perspectiveFovMatrix, "perspectiveFovMatrix");
+		ScreenPrintf::GetInstance()->MatrixScreenPrintf(0, ScreenPrintf::kRowHeight * 10, viewportMatrix, "viewportMatrix");
 		///
 		/// ↑描画処理ここまで
 		///

@@ -63,6 +63,40 @@ public://メンバ関数
 	Matrix4x4 MakeAffineMatrix(const TransformData& transformData);
 
 	/// <summary>
+	/// 正射影行列の作成
+	/// </summary>
+	/// <param name="left">左辺</param>
+	/// <param name="top">上辺</param>
+	/// <param name="right">右辺</param>
+	/// <param name="bottom">下辺</param>
+	/// <param name="nearClip">近平面</param>
+	/// <param name="farClip">遠平面</param>
+	/// <returns>正射影行列</returns>
+	Matrix4x4 MakeOrthographicMatrix(float left, float top, float right, float bottom, float nearClip, float farClip);
+
+	/// <summary>
+	/// 透視投影行列の作成
+	/// </summary>
+	/// <param name="fovY">fovY</param>
+	/// <param name="aspectRation">アスペクト比</param>
+	/// <param name="nearClip">近平面</param>
+	/// <param name="farClip">遠平面</param>
+	/// <returns></returns>
+	Matrix4x4 MakePerspectiveFovMatrix(float fovY, float aspectRation, float nearClip, float farClip);
+
+	/// <summary>
+	/// ビューポート行列の作成
+	/// </summary>
+	/// <param name="left">左辺</param>
+	/// <param name="top">上辺</param>
+	/// <param name="width">幅</param>
+	/// <param name="height">高さ</param>
+	/// <param name="minDepth">最小深度値</param>
+	/// <param name="maxDepth">最大深度値</param>
+	/// <returns>ビューポート行列</returns>
+	Matrix4x4 MakeViewportMatrix(float left, float top, float width, float height, float minDepth, float maxDepth);
+
+	/// <summary>
 	/// 座標変換
 	/// </summary>
 	/// <param name="vector">ベクトル</param>
