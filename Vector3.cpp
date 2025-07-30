@@ -50,3 +50,8 @@ Vector3 Vector3::Normalize() {
 	}
 	return result;
 }
+
+//クロス積
+Vector3 Vector3::Cross(const Vector3& v) {
+	return { y * v.z - z * v.y,z * v.x - x * v.z,x * v.y - y * v.x };
+}

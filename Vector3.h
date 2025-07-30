@@ -31,4 +31,11 @@ struct Vector3 {
 	/// </summary>
 	/// <returns>正規化</returns>
 	Vector3 Normalize();
+
+	/// <summary>
+	/// クロス積
+	/// </summary>
+	/// <param name="v">ベクトル</param>
+	/// <returns>クロス積</returns>
+	Vector3 Cross(const Vector3& v);
 };
