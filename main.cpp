@@ -1,36 +1,33 @@
 #include <Novice.h>
+#include <imgui.h>
 #include "ScreenPrintf.h"
 #include "Rendering.h"
-#include <imgui.h>
+#include "Camera.h"
 
 const char kWindowTitle[] = "GSManager";
-int kWindowWidth = 1280; // ウィンドウの幅
-int kWindowHeight = 720; // ウィンドウの高さ
+const float kWindowWidth = 1280; // ウィンドウの幅
+const float kWindowHeight = 720; // ウィンドウの高さ
 
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 
 	// ライブラリの初期化
-	Novice::Initialize(kWindowTitle, 1280, 720);
+	Novice::Initialize(kWindowTitle, static_cast<int>(kWindowWidth), static_cast<int>(kWindowHeight));
 
 	// キー入力結果を受け取る箱
 	char keys[256] = { 0 };
 	char preKeys[256] = { 0 };
 
+	//ベクトル
 	Vector3 v1 = { 1.2f,-3.9f,2.5f };
 	Vector3 v2 = { 2.8f,0.4f,-1.3f };
 	Vector3 cross = v1.Cross(v2);
 
+	//三角形
 	Vector3 rotate = {};
 	Vector3 translate = {};
-	Vector3 cameraPosition = { 0.0f, 0.0f, -10.0f };
 	Matrix4x4 worldMatrix = Matrix4x4::Indentity4x4();
-	Matrix4x4 cameraMatrix = Matrix4x4::Indentity4x4();
-	Matrix4x4 viewMatrix = Matrix4x4::Indentity4x4();
-	Matrix4x4 projectMatrix = Matrix4x4::Indentity4x4();
-	Matrix4x4 viewProjectMatrix = Matrix4x4::Indentity4x4();
 	Matrix4x4 worldViewProjectMatrix = Matrix4x4::Indentity4x4();
-	Matrix4x4 viewportMatrix = Matrix4x4::Indentity4x4();
 	Vector3 localVertices[3] = {
 		{-1.0f,-1.0f,0.0f},
 		{0.0f,1.0f,0.0f},
@@ -38,6 +35,10 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 	};
 	Vector3 screenVertices[3] = {};
 
+	//カメラ
+	Camera* camera = new Camera();
+	camera->Initialize(kWindowWidth, kWindowHeight);
+	Vector3 cameraPosition = { 0.0f, 0.0f, -10.0f };
 
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
@@ -50,22 +51,23 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 		///
 		/// ↓更新処理ここから
 		///
+		//カメラのトランスフォームデータを設定
+		camera->SetTransformData({ {1.0f,1.0f,1.0f},{},cameraPosition });
+		//カメラの更新
+		camera->Update();
+		//ワールド行列の作成
 		worldMatrix = Rendering::GetInstance()->MakeAffineMatrix({ { 1.0f,1.0f,1.0f },rotate, translate });
-		cameraMatrix = Rendering::GetInstance()->MakeAffineMatrix({ {1.0f,1.0f,1.0f},{},cameraPosition });
-		viewMatrix = ~cameraMatrix;
-		projectMatrix = Rendering::GetInstance()->MakePerspectiveFovMatrix(0.45f, float(kWindowWidth) / float(kWindowHeight), 0.1f, 100.0f);
-		viewProjectMatrix = viewMatrix * projectMatrix;
-		worldViewProjectMatrix = worldMatrix * viewProjectMatrix;
-		viewportMatrix = Rendering::GetInstance()->MakeViewportMatrix(0, 0, float(kWindowWidth), float(kWindowHeight), 0.0f, 1.0f);
+		//ワールドビュー射影行列の計算
+		worldViewProjectMatrix = worldMatrix * camera->GetViewProjectionMatrix();
+		//座標変換
 		for (int i = 0; i < 3; i++) {
 			Vector3 ndcVertex = Rendering::GetInstance()->Transform(localVertices[i], worldViewProjectMatrix);
-			screenVertices[i] = Rendering::GetInstance()->Transform(ndcVertex, viewportMatrix);
+			screenVertices[i] = Rendering::GetInstance()->Transform(ndcVertex, camera->GetViewportMatrix());
 		}
 
 		ImGui::DragFloat3("rotate", &rotate.x, 0.1f);
 		ImGui::DragFloat3("translate", &translate.x, 0.1f);
 		ImGui::DragFloat3("cameraPosition", &cameraPosition.x, 0.1f);
-
 		///
 		/// ↑更新処理ここまで
 		///
@@ -73,13 +75,16 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 		///
 		/// ↓描画処理ここから
 		///
+		//文字の描画
 		ScreenPrintf::GetInstance()->VectorScreenPrintf(0, 0, cross, "cross");
 
+		//三角形の描画
 		Novice::DrawTriangle(
 			static_cast<int>(screenVertices[0].x), static_cast<int>(screenVertices[0].y),
 			static_cast<int>(screenVertices[1].x), static_cast<int>(screenVertices[1].y),
 			static_cast<int>(screenVertices[2].x), static_cast<int>(screenVertices[2].y),
-			WHITE, kFillModeSolid);
+			WHITE, kFillModeSolid
+		);
 		///
 		/// ↑描画処理ここまで
 		///
@@ -97,6 +102,8 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 	ScreenPrintf::GetInstance()->Finalize();
 	//レンダリングの終了
 	Rendering::GetInstance()->Finalize();
+	//カメラの解放
+	delete camera;
 	// ライブラリの終了
 	Novice::Finalize();
 	return 0;

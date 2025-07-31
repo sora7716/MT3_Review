@@ -10,7 +10,7 @@ struct Matrix4x4 {
 	//乗算
 	Matrix4x4 operator*(const Matrix4x4& mat);
 	//逆行列
-	Matrix4x4 operator~();
+	Matrix4x4 Inverse();
 	//転置行列
 	Matrix4x4 Transpose();
 	//単位行列

@@ -37,7 +37,7 @@ Matrix4x4 Matrix4x4::operator*(const Matrix4x4& mat) {
 }
 
 //逆行列
-Matrix4x4 Matrix4x4::operator~() {
+Matrix4x4 Matrix4x4::Inverse() {
 	Matrix4x4 result{};
 	float determinant = m[0][0] * (m[1][1] * m[2][2] * m[3][3] +
 		m[2][1] * m[3][2] * m[1][3] +
