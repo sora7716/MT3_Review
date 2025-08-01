@@ -4,11 +4,24 @@
 #include "ScreenPrintf.h"
 #include "Rendering.h"
 #include "Camera.h"
+#include <numbers>
+#include <cmath>
 
 const char kWindowTitle[] = "GSManager";
 const float kWindowWidth = 1280; // ウィンドウの幅
 const float kWindowHeight = 720; // ウィンドウの高さ
 
+//球データ
+struct SphereData {
+	Vector3 center;//中心
+	float radius;//半径
+};
+
+/// <summary>
+/// グリッドの描画
+/// </summary>
+/// <param name="viewProjectionMatrix">ビュー射影行列</param>
+/// <param name="viewportMatrix">ビューポート行列</param>
 void DrawGrid(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix) {
 	const float kGridHalfWidth = 2.0f;//グリッドの半分の幅
 	const uint32_t kSubdivision = 10;//分割数
@@ -27,16 +40,21 @@ void DrawGrid(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMa
 		Vector3 screenEndPos = Rendering::GetInstance()->Transform(localEndPos, viewProjectionMatrix);
 		screenEndPos = Rendering::GetInstance()->Transform(screenEndPos, viewportMatrix);
 
+		//色の設定
+		uint32_t color = 0xAAAAAAFF;
+		if (xIndex == kSubdivision / 2) {
+			color = BLACK; // 中央の線は黒色にする
+		}
+
 		//描画
 		Novice::DrawLine(
 			static_cast<int32_t>(screenStartPos.x),
 			static_cast<int32_t>(screenStartPos.y),
 			static_cast<int32_t>(screenEndPos.x),
 			static_cast<int32_t>(screenEndPos.y),
-			0xAAAAAAFF
+			color
 		);
 	}
-
 
 	//左から右も同じように順々に引いていく
 	for (uint32_t zIndex = 0; zIndex <= kSubdivision; zIndex++) {
@@ -51,16 +69,92 @@ void DrawGrid(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMa
 		Vector3 screenEndPos = Rendering::GetInstance()->Transform(localEndPos, viewProjectionMatrix);
 		screenEndPos = Rendering::GetInstance()->Transform(screenEndPos, viewportMatrix);
 
+		//色の設定
+		uint32_t color = 0xAAAAAAFF;
+		if (zIndex == kSubdivision / 2) {
+			color = BLACK; // 中央の線は黒色にする
+		}
+
 		//描画
 		Novice::DrawLine(
 			static_cast<int32_t>(screenStartPos.x),
 			static_cast<int32_t>(screenStartPos.y),
 			static_cast<int32_t>(screenEndPos.x),
 			static_cast<int32_t>(screenEndPos.y),
-			0xAAAAAAFF
+			color
 		);
 	}
 
+}
+
+/// <summary>
+/// スフィアの描画
+/// </summary>
+/// <param name="viewProjection">ビュー射影行列</param>
+/// <param name="viewportMatrix">ビューポート行列</param>
+void DrawSphere(const SphereData& sphereData, const Matrix4x4& viewProjection, const Matrix4x4& viewportMatrix) {
+	const uint32_t kSubdivision = 10;
+	const float kPi = std::numbers::pi_v<float>;
+	const float kLonEvery = 2.0f * kPi / static_cast<float>(kSubdivision);
+	const float kLatEvery = kPi / static_cast<float>(kSubdivision);
+
+	for (uint32_t latIndex = 0; latIndex < kSubdivision; latIndex++) {
+		float lat = -kPi / 2.0f + kLatEvery * static_cast<float>(latIndex);
+
+		for (uint32_t lonIndex = 0; lonIndex < kSubdivision; lonIndex++) {
+			float lon = static_cast<float>(lonIndex) * kLonEvery;
+
+			// 球面座標からワールド座標に変換
+			Vector3 a = {
+				std::cos(lat) * std::cos(lon),
+				std::sin(lat),
+				std::cos(lat) * std::sin(lon)
+			};
+
+			Vector3 b = {
+				std::cos(lat + kLatEvery) * std::cos(lon),
+				std::sin(lat + kLatEvery),
+				std::cos(lat + kLatEvery) * std::sin(lon)
+			};
+
+			Vector3 c = {
+				std::cos(lat) * std::cos(lon + kLonEvery),
+				std::sin(lat),
+				std::cos(lat) * std::sin(lon + kLonEvery)
+			};
+
+			a = a * sphereData.radius + sphereData.center;
+			b = b * sphereData.radius + sphereData.center;
+			c = c * sphereData.radius + sphereData.center;
+
+			Vector3 screenA = Rendering::GetInstance()->Transform(a, viewProjection);
+			screenA = Rendering::GetInstance()->Transform(screenA, viewportMatrix);
+
+			Vector3 screenB = Rendering::GetInstance()->Transform(b, viewProjection);
+			screenB = Rendering::GetInstance()->Transform(screenB, viewportMatrix);
+
+			Vector3 screenC = Rendering::GetInstance()->Transform(c, viewProjection);
+			screenC = Rendering::GetInstance()->Transform(screenC, viewportMatrix);
+
+			// 経度線
+			Novice::DrawLine(
+				static_cast<int32_t>(screenA.x),
+				static_cast<int32_t>(screenA.y),
+				static_cast<int32_t>(screenB.x),
+				static_cast<int32_t>(screenB.y),
+				BLACK
+			);
+
+			// 緯度線
+			Novice::DrawLine(
+				static_cast<int32_t>(screenA.x),
+				static_cast<int32_t>(screenA.y),
+				static_cast<int32_t>(screenC.x),
+				static_cast<int32_t>(screenC.y),
+				BLACK
+			);
+		}
+	}
 }
 
 // Windowsアプリでのエントリーポイント(main関数)
@@ -76,8 +170,10 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 	//カメラ
 	Camera* camera = new Camera();
 	camera->Initialize(kWindowWidth, kWindowHeight);
-	TransformData cameraTransformData = { {1.0f,1.0f,1.0f},{},{0.0f,0.0f,-10.0f} };
+	TransformData cameraTransformData = { {1.0f,1.0f,1.0f},{0.26f,0.0f,0.0f},{0.0f,1.9f,-6.49f} };
 
+	//球
+	SphereData sphereData = { {}, 0.71f };
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
 		// フレームの開始
@@ -104,6 +200,7 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 		/// ↓描画処理ここから
 		///
 		DrawGrid(camera->GetViewProjectionMatrix(), camera->GetViewportMatrix());
+		DrawSphere(sphereData, camera->GetViewProjectionMatrix(), camera->GetViewportMatrix());
 		///
 		/// ↑描画処理ここまで
 		///

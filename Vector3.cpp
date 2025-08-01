@@ -10,6 +10,15 @@ Vector3 Vector3::operator+(const Vector3& v) {
 	return result;
 }
 
+//加算代入
+Vector3& Vector3::operator+=(const Vector3& v) {
+	// TODO: return ステートメントをここに挿入します
+	this->x += v.x;
+	this->y += v.y;
+	this->z += v.z;
+	return *this;
+}
+
 //減算
 Vector3 Vector3::operator-(const Vector3& v) {
 	Vector3 result = {};

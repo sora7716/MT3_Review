@@ -8,6 +8,8 @@ struct Vector3 {
 
 	//加算
 	Vector3 operator+(const Vector3& v);
+	//加算代入
+	Vector3& operator+=(const Vector3& v);
 	//減算
 	Vector3 operator-(const Vector3& v);
 	//スカラー倍
