@@ -1,5 +1,6 @@
 #include <Novice.h>
 #include <imgui.h>
+#include <cstdint>
 #include "ScreenPrintf.h"
 #include "Rendering.h"
 #include "Camera.h"
@@ -60,7 +61,7 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 		//ワールドビュー射影行列の計算
 		worldViewProjectMatrix = worldMatrix * camera->GetViewProjectionMatrix();
 		//座標変換
-		for (int i = 0; i < 3; i++) {
+		for (uint32_t i = 0; i < 3; i++) {
 			Vector3 ndcVertex = Rendering::GetInstance()->Transform(localVertices[i], worldViewProjectMatrix);
 			screenVertices[i] = Rendering::GetInstance()->Transform(ndcVertex, camera->GetViewportMatrix());
 		}
@@ -80,9 +81,9 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 
 		//三角形の描画
 		Novice::DrawTriangle(
-			static_cast<int>(screenVertices[0].x), static_cast<int>(screenVertices[0].y),
-			static_cast<int>(screenVertices[1].x), static_cast<int>(screenVertices[1].y),
-			static_cast<int>(screenVertices[2].x), static_cast<int>(screenVertices[2].y),
+			static_cast<int32_t>(screenVertices[0].x), static_cast<int32_t>(screenVertices[0].y),
+			static_cast<int32_t>(screenVertices[1].x), static_cast<int32_t>(screenVertices[1].y),
+			static_cast<int32_t>(screenVertices[2].x), static_cast<int32_t>(screenVertices[2].y),
 			WHITE, kFillModeSolid
 		);
 		///
