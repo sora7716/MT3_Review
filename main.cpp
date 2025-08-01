@@ -9,12 +9,59 @@ const char kWindowTitle[] = "GSManager";
 const float kWindowWidth = 1280; // ウィンドウの幅
 const float kWindowHeight = 720; // ウィンドウの高さ
 
-//三角形の頂点
-enum VertexPoint {
-	kLeft,
-	kTop,
-	kRight
-};
+void DrawGrid(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix) {
+	const float kGridHalfWidth = 2.0f;//グリッドの半分の幅
+	const uint32_t kSubdivision = 10;//分割数
+	const float kGridEvery = (kGridHalfWidth * 2.0f) / static_cast<float>(kSubdivision);//1つ分の長さ
+
+	//奥から手前ヘの線を順々に引いていく
+	for (uint32_t xIndex = 0; xIndex <= kSubdivision; xIndex++) {
+		//ローカル座標を求める
+		float z = -kGridHalfWidth + kGridEvery * static_cast<float>(xIndex);
+		Vector3 localStartPos = { -kGridHalfWidth, 0.0f, z };
+		Vector3 localEndPos = { kGridHalfWidth, 0.0f, z };
+
+		//スクリーン座標に変換
+		Vector3 screenStartPos = Rendering::GetInstance()->Transform(localStartPos, viewProjectionMatrix);
+		screenStartPos = Rendering::GetInstance()->Transform(screenStartPos, viewportMatrix);
+		Vector3 screenEndPos = Rendering::GetInstance()->Transform(localEndPos, viewProjectionMatrix);
+		screenEndPos = Rendering::GetInstance()->Transform(screenEndPos, viewportMatrix);
+
+		//描画
+		Novice::DrawLine(
+			static_cast<int32_t>(screenStartPos.x),
+			static_cast<int32_t>(screenStartPos.y),
+			static_cast<int32_t>(screenEndPos.x),
+			static_cast<int32_t>(screenEndPos.y),
+			0xAAAAAAFF
+		);
+	}
+
+
+	//左から右も同じように順々に引いていく
+	for (uint32_t zIndex = 0; zIndex <= kSubdivision; zIndex++) {
+		//ローカル座標を求める
+		float x = -kGridHalfWidth + kGridEvery * static_cast<float>(zIndex);
+		Vector3 localStartPos = { x, 0.0f, -kGridHalfWidth };
+		Vector3 localEndPos = { x, 0.0f, kGridHalfWidth };
+
+		//スクリーン座標に変換
+		Vector3 screenStartPos = Rendering::GetInstance()->Transform(localStartPos, viewProjectionMatrix);
+		screenStartPos = Rendering::GetInstance()->Transform(screenStartPos, viewportMatrix);
+		Vector3 screenEndPos = Rendering::GetInstance()->Transform(localEndPos, viewProjectionMatrix);
+		screenEndPos = Rendering::GetInstance()->Transform(screenEndPos, viewportMatrix);
+
+		//描画
+		Novice::DrawLine(
+			static_cast<int32_t>(screenStartPos.x),
+			static_cast<int32_t>(screenStartPos.y),
+			static_cast<int32_t>(screenEndPos.x),
+			static_cast<int32_t>(screenEndPos.y),
+			0xAAAAAAFF
+		);
+	}
+
+}
 
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
@@ -26,31 +73,11 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 	char keys[256] = { 0 };
 	char preKeys[256] = { 0 };
 
-	//ベクトル
-	Vector3 v1 = { 1.2f,-3.9f,2.5f };
-	Vector3 v2 = { 2.8f,0.4f,-1.3f };
-	Vector3 cross = v1.Cross(v2);
-
-	//三角形
-	Vector3 rotate = {};
-	Vector3 translate = {};
-	Matrix4x4 worldMatrix = Matrix4x4::Indentity4x4();
-	Matrix4x4 worldViewProjectMatrix = Matrix4x4::Indentity4x4();
-	Vector3 localVertices[3] = {
-		{-1.0f,-1.0f,0.0f},
-		{0.0f,1.0f,0.0f},
-		{1.0f,-1.0f,0.0f},
-	};
-	Vector3 screenVertices[3] = {};
-
 	//カメラ
 	Camera* camera = new Camera();
 	camera->Initialize(kWindowWidth, kWindowHeight);
-	Vector3 cameraPosition = { 0.0f, 0.0f, -10.0f };
+	TransformData cameraTransformData = { {1.0f,1.0f,1.0f},{},{0.0f,0.0f,-10.0f} };
 
-	Vector3 leftToTop = {};
-	Vector3 topToRight = {};
-	Vector3 triangleNormal = {};
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
 		// フレームの開始
@@ -63,58 +90,20 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 		/// ↓更新処理ここから
 		///
 		//カメラのトランスフォームデータを設定
-		camera->SetTransformData({ {1.0f,1.0f,1.0f},{},cameraPosition });
+		camera->SetTransformData(cameraTransformData);
 		//カメラの更新
 		camera->Update();
-
-		//回転させる
-		rotate.y += 0.1f;
-		//ワールド行列の作成
-		worldMatrix = Rendering::GetInstance()->MakeAffineMatrix({ { 1.0f,1.0f,1.0f },rotate, translate });
-		//ワールドビュー射影行列の計算
-		worldViewProjectMatrix = worldMatrix * camera->GetViewProjectionMatrix();
-		//座標変換
-		for (uint32_t i = 0; i < 3; i++) {
-			Vector3 ndcVertex = Rendering::GetInstance()->Transform(localVertices[i], worldViewProjectMatrix);
-			screenVertices[i] = Rendering::GetInstance()->Transform(ndcVertex, camera->GetViewportMatrix());
-		}
-
-		ImGui::DragFloat3("rotate", &rotate.x, 0.1f);
-		ImGui::DragFloat3("translate", &translate.x, 0.1f);
-		ImGui::DragFloat3("cameraPosition", &cameraPosition.x, 0.1f);
-
-		//左端から上端への差分ベクトル
-		leftToTop = screenVertices[static_cast<int32_t>(kTop)] - screenVertices[static_cast<int32_t>(kLeft)];
-		//上端から右端への差分ベクトル
-		topToRight = screenVertices[static_cast<int32_t>(kRight)] - screenVertices[static_cast<int32_t>(kTop)];
-		//三角形の法線ベクトル
-		triangleNormal = (leftToTop.Cross(topToRight)).Normalize();
-
-		//カメラと三角形の法線が向き合ってるかどうか
-		float facingDot = triangleNormal.Dot(cameraPosition.Normalize());
-
 		///
 		/// ↑更新処理ここまで
 		///
-
+		ImGui::Begin("camera");
+		ImGui::DragFloat3("rotate", &cameraTransformData.rotate.x, 0.1f);
+		ImGui::DragFloat3("translate", &cameraTransformData.translate.x, 0.1f);
+		ImGui::End();
 		///
 		/// ↓描画処理ここから
 		///
-		//文字の描画
-		ScreenPrintf::GetInstance()->VectorScreenPrintf(0, 0, cross, "cross");
-
-		//三角形の描画
-		if (facingDot < 0.0f) {
-			Novice::DrawTriangle(
-				static_cast<int32_t>(screenVertices[static_cast<int32_t>(kLeft)].x),
-				static_cast<int32_t>(screenVertices[static_cast<int32_t>(kLeft)].y),
-				static_cast<int32_t>(screenVertices[static_cast<int32_t>(kTop)].x),
-				static_cast<int32_t>(screenVertices[static_cast<int32_t>(kTop)].y),
-				static_cast<int32_t>(screenVertices[static_cast<int32_t>(kRight)].x),
-				static_cast<int32_t>(screenVertices[static_cast<int32_t>(kRight)].y),
-				WHITE, kFillModeSolid
-			);
-		}
+		DrawGrid(camera->GetViewProjectionMatrix(), camera->GetViewportMatrix());
 		///
 		/// ↑描画処理ここまで
 		///
