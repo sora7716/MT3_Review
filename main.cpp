@@ -9,6 +9,13 @@ const char kWindowTitle[] = "GSManager";
 const float kWindowWidth = 1280; // ウィンドウの幅
 const float kWindowHeight = 720; // ウィンドウの高さ
 
+//三角形の頂点
+enum VertexPoint {
+	kLeft,
+	kTop,
+	kRight
+};
+
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 
@@ -41,6 +48,9 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 	camera->Initialize(kWindowWidth, kWindowHeight);
 	Vector3 cameraPosition = { 0.0f, 0.0f, -10.0f };
 
+	Vector3 leftToTop = {};
+	Vector3 topToRight = {};
+	Vector3 triangleNormal = {};
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
 		// フレームの開始
@@ -56,6 +66,9 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 		camera->SetTransformData({ {1.0f,1.0f,1.0f},{},cameraPosition });
 		//カメラの更新
 		camera->Update();
+
+		//回転させる
+		rotate.y += 0.1f;
 		//ワールド行列の作成
 		worldMatrix = Rendering::GetInstance()->MakeAffineMatrix({ { 1.0f,1.0f,1.0f },rotate, translate });
 		//ワールドビュー射影行列の計算
@@ -69,6 +82,17 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 		ImGui::DragFloat3("rotate", &rotate.x, 0.1f);
 		ImGui::DragFloat3("translate", &translate.x, 0.1f);
 		ImGui::DragFloat3("cameraPosition", &cameraPosition.x, 0.1f);
+
+		//左端から上端への差分ベクトル
+		leftToTop = screenVertices[static_cast<int32_t>(kTop)] - screenVertices[static_cast<int32_t>(kLeft)];
+		//上端から右端への差分ベクトル
+		topToRight = screenVertices[static_cast<int32_t>(kRight)] - screenVertices[static_cast<int32_t>(kTop)];
+		//三角形の法線ベクトル
+		triangleNormal = (leftToTop.Cross(topToRight)).Normalize();
+
+		//カメラと三角形の法線が向き合ってるかどうか
+		float facingDot = triangleNormal.Dot(cameraPosition.Normalize());
+
 		///
 		/// ↑更新処理ここまで
 		///
@@ -80,12 +104,17 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 		ScreenPrintf::GetInstance()->VectorScreenPrintf(0, 0, cross, "cross");
 
 		//三角形の描画
-		Novice::DrawTriangle(
-			static_cast<int32_t>(screenVertices[0].x), static_cast<int32_t>(screenVertices[0].y),
-			static_cast<int32_t>(screenVertices[1].x), static_cast<int32_t>(screenVertices[1].y),
-			static_cast<int32_t>(screenVertices[2].x), static_cast<int32_t>(screenVertices[2].y),
-			WHITE, kFillModeSolid
-		);
+		if (facingDot < 0.0f) {
+			Novice::DrawTriangle(
+				static_cast<int32_t>(screenVertices[static_cast<int32_t>(kLeft)].x),
+				static_cast<int32_t>(screenVertices[static_cast<int32_t>(kLeft)].y),
+				static_cast<int32_t>(screenVertices[static_cast<int32_t>(kTop)].x),
+				static_cast<int32_t>(screenVertices[static_cast<int32_t>(kTop)].y),
+				static_cast<int32_t>(screenVertices[static_cast<int32_t>(kRight)].x),
+				static_cast<int32_t>(screenVertices[static_cast<int32_t>(kRight)].y),
+				WHITE, kFillModeSolid
+			);
+		}
 		///
 		/// ↑描画処理ここまで
 		///
