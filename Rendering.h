@@ -97,14 +97,6 @@ public://メンバ関数
 	Matrix4x4 MakeViewportMatrix(float left, float top, float width, float height, float minDepth, float maxDepth);
 
 	/// <summary>
-	/// 座標変換
-	/// </summary>
-	/// <param name="vector">ベクトル</param>
-	/// <param name="matrix">行列</param>
-	/// <returns>座標変換</returns>
-	Vector3 Transform(const Vector3& vector, const Matrix4x4& matrix);
-
-	/// <summary>
 	/// 終了
 	/// </summary>
 	void Finalize();

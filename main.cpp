@@ -6,10 +6,11 @@
 #include "Camera.h"
 #include <numbers>
 #include <cmath>
+#include "Math.h"
 
 const char kWindowTitle[] = "GSManager";
-const float kWindowWidth = 1280; // ウィンドウの幅
-const float kWindowHeight = 720; // ウィンドウの高さ
+const float kWindowWidth = 1280.0f; // ウィンドウの幅
+const float kWindowHeight = 720.0f; // ウィンドウの高さ
 
 //球データ
 struct SphereData {
@@ -35,10 +36,10 @@ void DrawGrid(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMa
 		Vector3 localEndPos = { kGridHalfWidth, 0.0f, z };
 
 		//スクリーン座標に変換
-		Vector3 screenStartPos = Rendering::GetInstance()->Transform(localStartPos, viewProjectionMatrix);
-		screenStartPos = Rendering::GetInstance()->Transform(screenStartPos, viewportMatrix);
-		Vector3 screenEndPos = Rendering::GetInstance()->Transform(localEndPos, viewProjectionMatrix);
-		screenEndPos = Rendering::GetInstance()->Transform(screenEndPos, viewportMatrix);
+		Vector3 screenStartPos = Math::Transform(localStartPos, viewProjectionMatrix);
+		screenStartPos = Math::Transform(screenStartPos, viewportMatrix);
+		Vector3 screenEndPos = Math::Transform(localEndPos, viewProjectionMatrix);
+		screenEndPos = Math::Transform(screenEndPos, viewportMatrix);
 
 		//色の設定
 		uint32_t color = 0xAAAAAAFF;
@@ -64,10 +65,10 @@ void DrawGrid(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMa
 		Vector3 localEndPos = { x, 0.0f, kGridHalfWidth };
 
 		//スクリーン座標に変換
-		Vector3 screenStartPos = Rendering::GetInstance()->Transform(localStartPos, viewProjectionMatrix);
-		screenStartPos = Rendering::GetInstance()->Transform(screenStartPos, viewportMatrix);
-		Vector3 screenEndPos = Rendering::GetInstance()->Transform(localEndPos, viewProjectionMatrix);
-		screenEndPos = Rendering::GetInstance()->Transform(screenEndPos, viewportMatrix);
+		Vector3 screenStartPos = Math::Transform(localStartPos, viewProjectionMatrix);
+		screenStartPos = Math::Transform(screenStartPos, viewportMatrix);
+		Vector3 screenEndPos = Math::Transform(localEndPos, viewProjectionMatrix);
+		screenEndPos = Math::Transform(screenEndPos, viewportMatrix);
 
 		//色の設定
 		uint32_t color = 0xAAAAAAFF;
@@ -131,14 +132,14 @@ void DrawSphere(const SphereData& sphereData, const Matrix4x4& viewProjection, c
 			c = c * sphereData.radius + sphereData.center;
 
 			//スクリーン座標に変換
-			Vector3 screenA = Rendering::GetInstance()->Transform(a, viewProjection);
-			screenA = Rendering::GetInstance()->Transform(screenA, viewportMatrix);
+			Vector3 screenA = Math::Transform(a, viewProjection);
+			screenA = Math::Transform(screenA, viewportMatrix);
 
-			Vector3 screenB = Rendering::GetInstance()->Transform(b, viewProjection);
-			screenB = Rendering::GetInstance()->Transform(screenB, viewportMatrix);
+			Vector3 screenB = Math::Transform(b, viewProjection);
+			screenB = Math::Transform(screenB, viewportMatrix);
 
-			Vector3 screenC = Rendering::GetInstance()->Transform(c, viewProjection);
-			screenC = Rendering::GetInstance()->Transform(screenC, viewportMatrix);
+			Vector3 screenC = Math::Transform(c, viewProjection);
+			screenC = Math::Transform(screenC, viewportMatrix);
 
 			// 経度線
 			Novice::DrawLine(
@@ -178,6 +179,7 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 
 	//球
 	SphereData sphereData = { {}, 0.71f };
+
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
 		// フレームの開始
@@ -189,22 +191,33 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 		///
 		/// ↓更新処理ここから
 		///
+
 		//カメラのトランスフォームデータを設定
 		camera->SetTransformData(cameraTransformData);
+
 		//カメラの更新
 		camera->Update();
-		///
-		/// ↑更新処理ここまで
-		///
+
 		ImGui::Begin("camera");
 		ImGui::DragFloat3("rotate", &cameraTransformData.rotate.x, 0.1f);
 		ImGui::DragFloat3("translate", &cameraTransformData.translate.x, 0.1f);
 		ImGui::End();
+
+
 		///
+		/// ↑更新処理ここまで
+		///
+
+		/// 
 		/// ↓描画処理ここから
 		///
+
+		//グリッド
 		DrawGrid(camera->GetViewProjectionMatrix(), camera->GetViewportMatrix());
+
+		//球
 		DrawSphere(sphereData, camera->GetViewProjectionMatrix(), camera->GetViewportMatrix());
+
 		///
 		/// ↑描画処理ここまで
 		///
@@ -220,10 +233,13 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 
 	//スクリーンプリントの終了
 	ScreenPrintf::GetInstance()->Finalize();
+
 	//レンダリングの終了
 	Rendering::GetInstance()->Finalize();
+
 	//カメラの解放
 	delete camera;
+
 	// ライブラリの終了
 	Novice::Finalize();
 	return 0;
