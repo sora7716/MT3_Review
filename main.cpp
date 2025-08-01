@@ -93,14 +93,16 @@ void DrawGrid(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMa
 /// <param name="viewProjection">ビュー射影行列</param>
 /// <param name="viewportMatrix">ビューポート行列</param>
 void DrawSphere(const SphereData& sphereData, const Matrix4x4& viewProjection, const Matrix4x4& viewportMatrix) {
-	const uint32_t kSubdivision = 10;
-	const float kPi = std::numbers::pi_v<float>;
-	const float kLonEvery = 2.0f * kPi / static_cast<float>(kSubdivision);
-	const float kLatEvery = kPi / static_cast<float>(kSubdivision);
+	const uint32_t kSubdivision = 10;//分割数
+	const float kPi = std::numbers::pi_v<float>;//円周率
+	const float kLonEvery = 2.0f * kPi / static_cast<float>(kSubdivision);//経度分割1つ分の長さ
+	const float kLatEvery = kPi / static_cast<float>(kSubdivision);//緯度分割1つ分の長さ
 
+	//緯度の方向に分割 -π/2 ~ π/2
 	for (uint32_t latIndex = 0; latIndex < kSubdivision; latIndex++) {
 		float lat = -kPi / 2.0f + kLatEvery * static_cast<float>(latIndex);
 
+		//経度方向に分割 0 ~ 2π
 		for (uint32_t lonIndex = 0; lonIndex < kSubdivision; lonIndex++) {
 			float lon = static_cast<float>(lonIndex) * kLonEvery;
 
@@ -123,10 +125,12 @@ void DrawSphere(const SphereData& sphereData, const Matrix4x4& viewProjection, c
 				std::cos(lat) * std::sin(lon + kLonEvery)
 			};
 
+			//球の半径と中心を考慮して座標を調整
 			a = a * sphereData.radius + sphereData.center;
 			b = b * sphereData.radius + sphereData.center;
 			c = c * sphereData.radius + sphereData.center;
 
+			//スクリーン座標に変換
 			Vector3 screenA = Rendering::GetInstance()->Transform(a, viewProjection);
 			screenA = Rendering::GetInstance()->Transform(screenA, viewportMatrix);
 
